@@ -15,10 +15,36 @@ def transcribe(
     language: str | None = None,
 ) -> dict:
     """Run the full transcription pipeline: transcribe, align, and diarize."""
-    result = _transcribe_audio(audio, settings, language)
-    result = _align_transcription(audio, result, settings)
+    transcription = _transcribe_audio(audio, settings, language)
+    detected = transcription["language"]
+    result = _align_transcription(audio, transcription, settings)
     result = _diarize_and_assign_speakers(audio, result, settings)
+
+    # Alignment returns segments and words only, dropping the language the
+    # transcription pass detected. The length and the full text are known here and
+    # nowhere downstream: the audio is not kept, and a reader adding up segment
+    # ends would be reading the last spoken word, not the end of the recording.
+    result["language"] = detected
+    result["duration"] = len(audio) / whisperx.audio.SAMPLE_RATE
+    result["text"] = _joined_text(result["segments"])
     return result
+
+
+def _joined_text(segments: list[dict]) -> str:
+    """Join the segments into the transcript they spell.
+
+    Alignment rebuilds the text of a segment from its words, and only the first one
+    keeps the leading space the transcription pass wrote. Joining them raw welds the
+    last word of a segment to the first of the next. The separator is the assembly,
+    not a correction: no segment is altered, and an existing space is never doubled.
+    """
+    joined = ""
+    for segment in segments:
+        text = segment["text"]
+        if joined and not joined[-1].isspace() and not text[:1].isspace():
+            joined += " "
+        joined += text
+    return joined
 
 
 def _transcribe_audio(

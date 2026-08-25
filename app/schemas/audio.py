@@ -27,12 +27,12 @@ class AudioTranscription(BaseModel):
 
     segments: List[Segment]
     word_segments: Optional[List[Dict[str, Any]]] = None
+    language: str
+    duration: float
+    text: str
 
 
 class AudioTranscriptionVerbose(AudioTranscription):
     """Extended audio transcription model with additional details"""
 
-    language: str
-    duration: float
-    text: str
     words: List[Word]

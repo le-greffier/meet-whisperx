@@ -17,6 +17,8 @@ FAKE_ALIGN_MODELS_HF = {"en": "WAV2VEC2_ASR_BASE_960H", "fr": "some-fr-model"}
 FAKE_ALIGN_MODELS_TORCH = {"en": "WAV2VEC2_ASR_BASE_960H"}
 
 _mock_whisperx.utils.LANGUAGES = FAKE_LANGUAGES
+# The rate every whisper model works at; the service divides by it to get a length.
+_mock_whisperx.audio.SAMPLE_RATE = 16000
 _mock_whisperx.alignment.DEFAULT_ALIGN_MODELS_HF = FAKE_ALIGN_MODELS_HF
 _mock_whisperx.alignment.DEFAULT_ALIGN_MODELS_TORCH = FAKE_ALIGN_MODELS_TORCH
 
@@ -63,6 +65,9 @@ MOCK_TRANSCRIPTION_RESULT = {
         {"start": 0.0, "end": 1.5, "text": "Hello world.", "words": _FAKE_WORDS}
     ],
     "word_segments": _FAKE_WORDS,
+    "language": "en",
+    "duration": 2.0,
+    "text": "Hello world.",
 }
 
 FAKE_AUDIO = MagicMock(name="fake_audio_array")
